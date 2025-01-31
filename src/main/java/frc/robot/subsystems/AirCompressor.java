@@ -5,13 +5,13 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class AirCompressor extends SubsystemBase {
-  private final Compressor comp = new Compressor(PneumaticsModuleType.CTREPCM);
+  private final Compressor comp = new Compressor(PneumaticsModuleType.REVPH);
 
   public void run(boolean run) {
-    if (run) {
-      comp.enableDigital();
-    } else {
-      comp.disable();
-    }
-  }    
+    comp.enableAnalog(90, 120);
+  }
+
+  public void stop() {
+    comp.disable();
+  }
 }

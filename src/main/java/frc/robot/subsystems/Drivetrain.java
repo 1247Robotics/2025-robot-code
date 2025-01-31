@@ -22,5 +22,12 @@ public class Drivetrain extends SubsystemBase {
     R_RIGHT.configure(new SparkMaxConfig().follow(F_RIGHT), null, null);
 
   }
-  
+
+  public void arcadeDrive(double speed, double rotation) {
+    drive.arcadeDrive(speed, rotation);
+  }
+
+  public void stop() {
+    drive.stopMotor();
+  }
 }
