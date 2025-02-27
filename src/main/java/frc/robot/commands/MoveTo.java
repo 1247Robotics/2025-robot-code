@@ -29,7 +29,6 @@ public class MoveTo extends Command {
     forwardLimit = forwardSpeed;
     turningLimit = turningSpeed;
     addRequirements(drivetrain);
-    System.out.println("Moving to [ " + X + ", " + Y + " ]");
   }
 
   public MoveTo(double X, double Y, Drivetrain drivetrain) {
@@ -39,7 +38,6 @@ public class MoveTo extends Command {
     forwardLimit = 0.5;
     turningLimit = 0.6;
     addRequirements(drivetrain);
-    System.out.println("Moving to [ " + X + ", " + Y + " ]");
   }
 
   public MoveTo(double X, double Y, Drivetrain drivetrain, double speed) {
@@ -49,7 +47,6 @@ public class MoveTo extends Command {
     forwardLimit = speed;
     turningLimit = speed;
     addRequirements(drivetrain);
-    System.out.println("Moving to [ " + X + ", " + Y + " ]");
   }
 
   @Override
@@ -143,7 +140,6 @@ public class MoveTo extends Command {
     final boolean finished = distance < 0.1;
     if (finished) {
       drivetrain.arcadeDrive(0, 0);
-      System.out.println("Finished moving to " + X + ", " + Y);
     }
 
     return finished;
