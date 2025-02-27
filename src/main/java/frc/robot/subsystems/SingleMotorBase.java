@@ -11,6 +11,8 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
@@ -34,7 +36,9 @@ public class SingleMotorBase extends SubsystemBase {
 
   protected final SparkClosedLoopController closedLoop;
 
-  public SingleMotorBase(int CANID, double unitsPerRotation) {
+  protected final String SmartDashboardKey;
+
+  public SingleMotorBase(int CANID, double unitsPerRotation, String smartDashboardEntry) {
     motor = new SparkMax(CANID, MotorType.kBrushless);
     motor.clearFaults();
 
@@ -57,12 +61,26 @@ public class SingleMotorBase extends SubsystemBase {
 
 
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    motor.getEncoder().setPosition(0);
 
     closedLoop = motor.getClosedLoopController();
+
+    if (!smartDashboardEntry.equals("NULL")) {
+      SmartDashboard.setDefaultNumber(smartDashboardEntry, 0);
+    }
+    SmartDashboardKey = smartDashboardEntry;
+  }
+
+  SingleMotorBase(int CANID, double unitsPerRotation) {
+    this(CANID, unitsPerRotation, "NULL");
+  }
+
+  SingleMotorBase(int CANID, String smartDashboardEntry) {
+    this(CANID, 1.0, smartDashboardEntry);
   }
 
   SingleMotorBase(int CANID) {
-    this(CANID, 1.0);
+    this(CANID, "NULL");
   }
 
   public void setPosition(double target) {
@@ -85,8 +103,20 @@ public class SingleMotorBase extends SubsystemBase {
     return motor.getAbsoluteEncoder().getVelocity();
   }
 
+  protected void followValueFromSmartDashboard() {
+    if (SmartDashboardKey.equals("NULL")) {
+      DriverStation.reportError("Cannot read value of NULL SmartDashboard entry", null);
+      return;
+    }
+
+    double position = SmartDashboard.getNumber(SmartDashboardKey, -1);
+    if (position < 0) {
+      SmartDashboard.putNumber(SmartDashboardKey, 0);
+      position = 0;
+    }
+    setPosition(position);
+  }
   public void stop() {
     motor.stopMotor();
-  }
-  
+  }  
 }
