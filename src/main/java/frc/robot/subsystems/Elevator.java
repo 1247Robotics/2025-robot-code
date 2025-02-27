@@ -12,4 +12,9 @@ public class Elevator extends SingleMotorBase {
     super(21, gearRatio * circumference, "Elevator Position", false);
     SmartDashboard.setDefaultNumber("Elevator Position", 0.0);
   }
+
+  @Override
+  protected void onTick() {
+    SmartDashboard.putNumber("Elevator Volatage", motor.getBusVoltage());
+  }
 }

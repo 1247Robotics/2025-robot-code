@@ -7,7 +7,6 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -28,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * }
  * </pre>
  * <p>The Motor and Closed Loop Controllers can be accessed with the <code>motor</code> and <code>closedLoop</code> variables, respectively.</p>
+ * <p>The <code>onTick</code> method is called every time any of <code>setPosition</code>, <code>setVelocity</code>, or <code>setEffort</code> gets run and can be changed to run any code, like sending info to SmartDashboard, every time the motor is interacted with.
  */
 public class SingleMotorBase extends SubsystemBase {
   protected final SparkMax motor;
@@ -96,14 +96,17 @@ public class SingleMotorBase extends SubsystemBase {
 
   public void setPosition(double target) {
     closedLoop.setReference(target, ControlType.kPosition);
+    onTick();
   }
 
   public void setVelocity(double target) {
     closedLoop.setReference(target, ControlType.kVelocity, ClosedLoopSlot.kSlot1);
+    onTick();
   }
 
   public void setEffort(double effort) {
     motor.set(effort);
+    onTick();
   }
 
   public double getPosition() {
@@ -127,7 +130,10 @@ public class SingleMotorBase extends SubsystemBase {
     }
     setPosition(position);
   }
+
+  protected void onTick() {}
+
   public void stop() {
     motor.stopMotor();
-  }  
+  }
 }
