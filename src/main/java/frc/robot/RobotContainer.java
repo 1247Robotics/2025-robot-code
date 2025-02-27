@@ -7,8 +7,10 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.AirCompressor;
+import frc.robot.subsystems.ArmBasePivot;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.EddieSpaghetti;
+import frc.robot.subsystems.Elevator;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -32,6 +34,8 @@ public class RobotContainer {
   // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final EddieSpaghetti launcherPistonThing = new EddieSpaghetti();
   private boolean pistonGo = false;
+  private final ArmBasePivot armBase = new ArmBasePivot();
+  private final Elevator elevator = new Elevator();
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -64,6 +68,8 @@ public class RobotContainer {
       pistonGo = !pistonGo;
       launcherPistonThing.setActuation(pistonGo);
     }));
+    armBase.setDefaultCommand(new RunCommand(() -> armBase.followValueFromSmartDashboard(), armBase));
+    elevator.setDefaultCommand(new RunCommand(() -> elevator.followValueFromSmartDashboard(), elevator));
   }
 
   /**

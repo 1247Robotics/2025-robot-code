@@ -103,7 +103,7 @@ public class SingleMotorBase extends SubsystemBase {
     return motor.getAbsoluteEncoder().getVelocity();
   }
 
-  protected void followValueFromSmartDashboard() {
+  public void followValueFromSmartDashboard() {
     if (SmartDashboardKey.equals("NULL")) {
       DriverStation.reportError("Cannot read value of NULL SmartDashboard entry", null);
       return;
