@@ -8,9 +8,11 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.AirCompressor;
 import frc.robot.subsystems.ArmBasePivot;
+import frc.robot.subsystems.ArmExtension;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.EddieSpaghetti;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Wrist;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -36,6 +38,8 @@ public class RobotContainer {
   private boolean pistonGo = false;
   private final ArmBasePivot armBase = new ArmBasePivot();
   private final Elevator elevator = new Elevator();
+  private final ArmExtension armExtension = new ArmExtension();
+  private final Wrist wrist = new Wrist();
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -70,6 +74,8 @@ public class RobotContainer {
     }));
     armBase.setDefaultCommand(new RunCommand(() -> armBase.followValueFromSmartDashboard(), armBase));
     elevator.setDefaultCommand(new RunCommand(() -> elevator.followValueFromSmartDashboard(), elevator));
+    wrist.setDefaultCommand(new RunCommand(() -> wrist.followValueFromSmartDashboard(), wrist));
+    armExtension.setDefaultCommand(new RunCommand(() -> armExtension.followValueFromSmartDashboard(), armExtension));
   }
 
   /**

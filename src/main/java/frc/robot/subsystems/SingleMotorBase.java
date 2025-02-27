@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -38,14 +39,20 @@ public class SingleMotorBase extends SubsystemBase {
 
   protected final String SmartDashboardKey;
 
-  public SingleMotorBase(int CANID, double unitsPerRotation, String smartDashboardEntry) {
+  protected static double CalculateCircumference(double diameter) {
+    double radius = diameter / 2;
+    return Math.PI * radius * radius;
+  }
+
+  public SingleMotorBase(int CANID, double unitsPerRotation, String smartDashboardEntry, boolean invertMotor) {
     motor = new SparkMax(CANID, MotorType.kBrushless);
     motor.clearFaults();
 
-    SparkFlexConfig config = new SparkFlexConfig();
+    SparkMaxConfig config = new SparkMaxConfig();
     config.idleMode(IdleMode.kBrake);
     config.absoluteEncoder.positionConversionFactor(unitsPerRotation);
     config.absoluteEncoder.velocityConversionFactor(unitsPerRotation);
+    config.inverted(invertMotor);
     config.closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
       .p(P)
@@ -71,8 +78,12 @@ public class SingleMotorBase extends SubsystemBase {
     SmartDashboardKey = smartDashboardEntry;
   }
 
+  SingleMotorBase(int CANID, double unitsPerRotation, String smartDashboardEntry) {
+    this(CANID, unitsPerRotation, smartDashboardEntry, false);
+  }
+
   SingleMotorBase(int CANID, double unitsPerRotation) {
-    this(CANID, unitsPerRotation, "NULL");
+    this(CANID, unitsPerRotation, "NULL", false);
   }
 
   SingleMotorBase(int CANID, String smartDashboardEntry) {
