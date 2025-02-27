@@ -6,13 +6,20 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
+import frc.robot.subsystems.AirCompressor;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.EddieSpaghetti;
 import frc.robot.subsystems.ExampleSubsystem;
+
+import java.util.ArrayList;
+import java.util.function.Supplier;
+
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
@@ -22,18 +29,23 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // The robot's subsystems and commands are defined here...
-  private final Drivetrain drivetrain = new Drivetrain();
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
+
+  // The robot's subsystems and commands are defined here...
+  private final Drivetrain drivetrain = new Drivetrain(m_driverController);
+  private final AirCompressor airCompressor = new AirCompressor();
+  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final EddieSpaghetti launcherPistonThing = new EddieSpaghetti();
+  private boolean pistonGo = false;
+
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    drivetrain.setBrakes(true);
   }
 
   /**
@@ -47,24 +59,18 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
+    // new Trigger(m_exampleSubsystem::exampleCondition)
+    //     .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
-    drivetrain.setDefaultCommand(
-      new FunctionalCommand(
-        null,
-        () -> drivetrain.arcadeDrive(
-            m_driverController.getLeftY(),
-            m_driverController.getRightX()
-          ),
-        (interupted) -> drivetrain.stop(),
-        () -> false,
-        drivetrain
-      )
+    airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.stop(), airCompressor));
+    drivetrain.setDefaultCommand(new RunCommand(
+      () -> drivetrain.arcadeDrive(m_driverController.getLeftY() * 0.75, m_driverController.getRightX() * 0.75),
+      drivetrain)
     );
+    m_driverController.a().toggleOnTrue(Commands.run(() -> {
+      pistonGo = !pistonGo;
+      launcherPistonThing.setActuation(pistonGo);
+    }));
   }
 
   /**
@@ -74,6 +80,8 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    // return Autos.exampleAuto(m_exampleSubsystem);
+    drivetrain.resetDisplacement();
+    return Autos.imuAuto(drivetrain);
   }
 }
