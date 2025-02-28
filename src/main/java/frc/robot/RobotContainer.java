@@ -38,7 +38,7 @@ public class RobotContainer {
   private boolean pistonGo = false;
   private final ArmBasePivot armBase = new ArmBasePivot();
   private final Elevator elevator = new Elevator();
-  private final ArmExtension armExtension = new ArmExtension();
+  // private final ArmExtension armExtension = new ArmExtension();
   private final Wrist wrist = new Wrist();
 
 
@@ -75,7 +75,7 @@ public class RobotContainer {
     armBase.setDefaultCommand(new RunCommand(() -> armBase.followValueFromSmartDashboard(), armBase));
     elevator.setDefaultCommand(new RunCommand(() -> elevator.followValueFromSmartDashboard(), elevator));
     wrist.setDefaultCommand(new RunCommand(() -> wrist.followValueFromSmartDashboard(), wrist));
-    armExtension.setDefaultCommand(new RunCommand(() -> armExtension.followValueFromSmartDashboard(), armExtension));
+    // armExtension.setDefaultCommand(new RunCommand(() -> armExtension.followValueFromSmartDashboard(), armExtension));
   }
 
   /**
