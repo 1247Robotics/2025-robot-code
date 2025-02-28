@@ -11,7 +11,7 @@ public class CalibrateElevator extends Command {
   private boolean foundBottom = false;
   private boolean foundTop = false;
   private boolean previouslyMoving = false;
-  private Timer startedAt = new Timer();
+  private Timer actionTimer = new Timer();
 
   public CalibrateElevator(Elevator elevator) {
     this.elevator = elevator;
@@ -20,7 +20,7 @@ public class CalibrateElevator extends Command {
 
   @Override
   public void initialize() {
-    startedAt.start();
+    actionTimer.start();
     
   }
 
@@ -29,15 +29,17 @@ public class CalibrateElevator extends Command {
     if (!foundBottom) {
       elevator.setEffort(-0.25);
 
-      if (!previouslyMoving && startedAt.get() < 0.25) {
+      if (!previouslyMoving && actionTimer.get() < 0.25) {
         previouslyMoving = elevator.getVelocity() < 0;
+        actionTimer.reset();
         return;
       }
 
-      if (elevator.getVelocity() > 0.05) {
+      if (elevator.getVelocity() > 0.05 || actionTimer.get() > 10) {
         elevator.atBottom();
         foundBottom = true;
         previouslyMoving = false;
+        actionTimer.reset();
         return;
       }
 
@@ -45,17 +47,20 @@ public class CalibrateElevator extends Command {
     }
 
     if (!foundTop) {
-      elevator.setEffort(0.25);
+      elevator.setEffort(0.4);
 
-      if (!previouslyMoving) {
+      if (!previouslyMoving && actionTimer.get() < 10) {
         previouslyMoving = elevator.getVelocity() > 0;
+        actionTimer.reset();
         return;
       }
 
-      if (elevator.getVelocity() < 0.05) {
+      if (elevator.getVelocity() < 0.05 || actionTimer.get() > 10) {
         elevator.atTop();
         foundTop = true;
         previouslyMoving = false;
+        actionTimer.stop();
+        actionTimer = null;
         return;
       }
 
