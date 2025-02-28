@@ -21,11 +21,10 @@ public final class Autos {
   }
 
   public static Command imuAuto(Drivetrain drivetrain) {
-    return Commands.sequence(
-      new MoveTo(0, 20, drivetrain, 1),
-      new MoveTo(0, 0, drivetrain),
-      new PointTo(0, drivetrain)
-    );
+    // return Commands.sequence(
+    //   new MoveTo(0, 2.5)
+    // );
+    return new MoveTo(0, 2.5, drivetrain);
 
   }
 

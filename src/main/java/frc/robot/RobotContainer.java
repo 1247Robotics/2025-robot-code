@@ -80,11 +80,12 @@ public class RobotContainer {
     wrist.setDefaultCommand(new RunCommand(() -> wrist.followValueFromSmartDashboard(), wrist));
 
     m_driverController.y().debounce(5).toggleOnTrue(
-      Commands.sequence(
-        new CalibrateElevator(elevator),
-        new CalibrateArmPivot(armBase),
-        new CalibrateWrist(wrist, armBase)
-      ));
+      // Commands.sequence(
+        new CalibrateElevator(elevator)
+        // new CalibrateArmPivot(armBase),
+        // new CalibrateWrist(wrist, armBase)
+      // )
+      );
     // armExtension.setDefaultCommand(new RunCommand(() -> armExtension.followValueFromSmartDashboard(), armExtension));
   }
 

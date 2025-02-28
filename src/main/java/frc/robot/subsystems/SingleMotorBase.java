@@ -44,8 +44,7 @@ public class SingleMotorBase extends SubsystemBase {
   protected final String SmartDashboardKey;
 
   protected static double CalculateCircumference(double diameter) {
-    double radius = diameter / 2;
-    return Math.PI * radius * radius;
+    return Math.PI * diameter;
   }
 
   protected final SparkMaxConfig config = new SparkMaxConfig();
@@ -173,6 +172,15 @@ public class SingleMotorBase extends SubsystemBase {
     applyConfig();
 
     reverseLimit = Double.MIN_VALUE;
+  }
+
+  public void setIdle(IdleMode mode) {
+    config.idleMode(mode);
+    applyConfig();
+  }
+
+  public void setBrakes(boolean enable) {
+    setIdle(enable ? IdleMode.kBrake : IdleMode.kCoast);
   }
 
   public void setPosition(double target) {
