@@ -17,4 +17,13 @@ public class Elevator extends SingleMotorBase {
   protected void onTick() {
     SmartDashboard.putNumber("Elevator Volatage", motor.getBusVoltage());
   }
+
+  public void atTop() {
+    setForwardLimit();
+  }
+
+  public void atBottom() {
+    resetPosition();
+    setReverseLimit();
+  }
 }

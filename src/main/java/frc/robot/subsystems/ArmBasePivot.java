@@ -13,4 +13,13 @@ public class ArmBasePivot extends SingleMotorBase {
   protected void onTick() {
     SmartDashboard.putNumber("Arm Pivot Voltage", motor.getBusVoltage());
   }
+
+  public void atFrontLimit() {
+    setForwardLimit();
+  }
+
+  public void atRearLimit() {
+    resetPosition();
+    setReverseLimit();
+  }
 }

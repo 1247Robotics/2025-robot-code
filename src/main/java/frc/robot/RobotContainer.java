@@ -6,6 +6,9 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
+import frc.robot.commands.CalibrateArmPivot;
+import frc.robot.commands.CalibrateElevator;
+import frc.robot.commands.CalibrateWrist;
 import frc.robot.subsystems.AirCompressor;
 import frc.robot.subsystems.ArmBasePivot;
 import frc.robot.subsystems.ArmExtension;
@@ -75,6 +78,13 @@ public class RobotContainer {
     armBase.setDefaultCommand(new RunCommand(() -> armBase.followValueFromSmartDashboard(), armBase));
     elevator.setDefaultCommand(new RunCommand(() -> elevator.followValueFromSmartDashboard(), elevator));
     wrist.setDefaultCommand(new RunCommand(() -> wrist.followValueFromSmartDashboard(), wrist));
+
+    m_driverController.y().debounce(5).toggleOnTrue(
+      Commands.sequence(
+        new CalibrateElevator(elevator),
+        new CalibrateArmPivot(armBase),
+        new CalibrateWrist(wrist, armBase)
+      ));
     // armExtension.setDefaultCommand(new RunCommand(() -> armExtension.followValueFromSmartDashboard(), armExtension));
   }
 

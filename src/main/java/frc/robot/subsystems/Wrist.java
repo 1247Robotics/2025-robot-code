@@ -13,4 +13,13 @@ public class Wrist extends SingleMotorBase {
   protected void onTick() {
     SmartDashboard.putNumber("Wrist Voltage", motor.getBusVoltage());
   }
+
+  public void atStart() {
+    resetPosition();
+    setReverseLimit();
+  }
+
+  public void atEnd() {
+    setForwardLimit();
+  }
 }
