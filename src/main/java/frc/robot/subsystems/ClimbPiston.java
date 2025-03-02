@@ -5,10 +5,10 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class EddieSpaghetti extends SubsystemBase {
+public class ClimbPiston extends SubsystemBase {
     private final Solenoid solenoid = new Solenoid(1, PneumaticsModuleType.REVPH, 0);
 
-    public EddieSpaghetti() {
+    public ClimbPiston() {
         // solenoid.set(true);
     }
     

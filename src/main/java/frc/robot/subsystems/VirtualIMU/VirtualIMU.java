@@ -1,7 +1,5 @@
 package frc.robot.subsystems.VirtualIMU;
 
-import javax.sound.midi.Track;
-
 import com.revrobotics.spark.SparkFlex;
 import com.studica.frc.AHRS;
 
@@ -47,9 +45,9 @@ public class VirtualIMU {
         return rightMotor.getMotor();
     }
 
-    private double differentialToRadians(double left, double right) {
-        return (right - left) / wheelBase;
-    }
+    // private double differentialToRadians(double left, double right) {
+    //     return (right - left) / wheelBase;
+    // }
 
     // private void updateTheta(double distanceTraveledLeft, double distanceTraveledRight) {
     //     double relativeTheta = differentialToRadians(distanceTraveledLeft, distanceTraveledRight);

@@ -5,11 +5,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.VirtualIMU.VirtualIMU;
 
 // import com.revrobotics.;
@@ -22,15 +20,15 @@ public class Drivetrain extends SubsystemBase {
   private final SparkFlex R_RIGHT = new SparkFlex(14, MotorType.kBrushless);
   private final DifferentialDrive drive = new DifferentialDrive(F_LEFT, F_RIGHT);
   private final VirtualIMU pos = new VirtualIMU(F_LEFT, F_RIGHT);
-  private final CommandXboxController controller;
+  // private final CommandXboxController controller;
 
-  public Drivetrain(CommandXboxController controller) {
+  public Drivetrain() {
     F_LEFT.configure(new SparkFlexConfig().idleMode(IdleMode.kCoast), null, null);
     F_RIGHT.configure(new SparkFlexConfig().idleMode(IdleMode.kCoast), null, null);
     R_LEFT.configure(new SparkFlexConfig().follow(F_LEFT).idleMode(IdleMode.kCoast), null, null);
     R_RIGHT.configure(new SparkFlexConfig().follow(F_RIGHT).idleMode(IdleMode.kCoast), null, null);
     pos.resetDisplacement();
-    this.controller = controller;
+    // this.controller = controller;
 
   }
 
@@ -40,14 +38,12 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("Angle", pos.getAngle());
     SmartDashboard.putNumber("Y Displacement", getYDisplacement());
     SmartDashboard.putNumber("X Displacement", getXDisplacement());
+  }
 
+  public double getIMURumble() {
     double rumble = Math.abs(pos.getAvgAccel() / 2);
-
     if (rumble < 0.1) rumble = 0;
-
-    SmartDashboard.putNumber("rumble", rumble);
-
-    controller.setRumble(RumbleType.kBothRumble, rumble);
+    return rumble;
   }
 
   public void stop() {

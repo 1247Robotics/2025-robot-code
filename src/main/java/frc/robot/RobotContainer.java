@@ -4,19 +4,14 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
-import frc.robot.commands.CalibrateArmPivot;
-import frc.robot.commands.CalibrateElevator;
-import frc.robot.commands.CalibrateWrist;
 import frc.robot.subsystems.AirCompressor;
 import frc.robot.subsystems.ArmBasePivot;
-import frc.robot.subsystems.ArmExtension;
+import frc.robot.subsystems.ControllerVibration;
 import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.EddieSpaghetti;
+import frc.robot.subsystems.ClimbPiston;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Wrist;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -31,30 +26,38 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  private final CommandXboxController otherController =
-    new CommandXboxController(1);
+  //#region Controllers
+  private final CommandXboxController m_driverController       = new CommandXboxController(0);
+  private final ControllerVibration   driverVibration          = new ControllerVibration(m_driverController);
 
-  // The robot's subsystems and commands are defined here...
-  private final Drivetrain drivetrain = new Drivetrain(m_driverController);
-  private final AirCompressor airCompressor = new AirCompressor();
-  // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-  private final EddieSpaghetti launcherPistonThing = new EddieSpaghetti();
+  private final CommandXboxController m_armController          = new CommandXboxController(1);
+  private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
+  //#endregion
+
+  //#region Drivetrain
+  private final Drivetrain    drivetrain          = new Drivetrain();
+  //#endregion
+
+  //#region Pneumatics
+  private final AirCompressor airCompressor       = new AirCompressor();
+  private final ClimbPiston   launcherPistonThing = new ClimbPiston();
+  //#endregion
+
+  //#region Arm
+  private final Elevator      elevator            = new Elevator();
+  private final ArmBasePivot  armBase             = new ArmBasePivot();
+  private final Wrist         wrist               = new Wrist();
+  //#endregion
+  
+  //#region Variables
   private boolean pistonGo = false;
-  private final ArmBasePivot armBase = new ArmBasePivot();
-  private final Elevator elevator = new Elevator();
-  // private final ArmExtension armExtension = new ArmExtension(armBase);
-  private final Wrist wrist = new Wrist();
-
+  //#endregion
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
     drivetrain.setBrakes(true);
-    // SmartDashboard.putBoolean("Climber", pistonGo);
     SmartDashboard.setDefaultBoolean("Climber", pistonGo);
   }
 
@@ -68,51 +71,77 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // elevator.disableForwardLimit();
-    // elevator.disableReverseLimit();
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    // new Trigger(m_exampleSubsystem::exampleCondition)
-    //     .onTrue(new ExampleCommand(m_exampleSubsystem));
+    // IMU haptics
+    driverVibration.setDefaultCommand(
+      new RunCommand(() -> driverVibration.setVibration(drivetrain.getIMURumble()), driverVibration));
+      
+    //#region Compressor
 
+    // Run air compressor
     airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor));
+
+    // Buzz controllers if pressure is too high
+    airCompressor.whileOverPressure().onTrue(
+      new RunCommand(() -> {
+        driverVibration.setVibration(1);
+        m_armControllerVibration.setVibration(1);
+      }, driverVibration)
+    );
+    //#endregion
+
+    //#region Drivetrain 
+
+    // Tie drivetrain to driver's controller 
     drivetrain.setDefaultCommand(new RunCommand(
       () -> drivetrain.arcadeDrive(Math.pow(m_driverController.getLeftY(), 3) * 0.65, Math.pow(m_driverController.getRightX(), 3) * 0.65),
       drivetrain)
     );
-    m_driverController.a().toggleOnTrue(Commands.run(() -> {
+
+    //#endregion
+
+    //#region Climb piston
+    // Retract solenoid on start
+    launcherPistonThing.runOnce(() -> launcherPistonThing.setActuation(false));
+
+    // Engage climb solenoid
+    m_driverController.a().debounce(0.2).onTrue(Commands.run(() -> {
       SmartDashboard.putBoolean("Climber", true);
       launcherPistonThing.setActuation(true);
     }));
 
-    launcherPistonThing.runOnce(() -> launcherPistonThing.setActuation(false));
-
-    m_driverController.b().toggleOnTrue(Commands.run(() -> {
+    // Disengage climb solenoid
+    m_driverController.b().onTrue(Commands.run(() -> {
       SmartDashboard.putBoolean("Climber", false);
       launcherPistonThing.setActuation(false);
     }));
+    //#endregion
 
-    // armBase.setDefaultCommand(new RunCommand(() -> armBase.followValueFromSmartDashboard(), armBase));
-    // elevator.setDefaultCommand(new RunCommand(() -> elevator.followValueFromSmartDashboard(), elevator));
-    // elevator.setDefaultCommand(new RunCommand(() -> elevator.setEffort(0.4), elevator));
-    // m_driverController.rightTrigger().onChange(new RunCommand(() -> armBase.setEffort(Math.pow(m_driverController.getRightTriggerAxis(), 3)), armBase));
-    // m_driverController.leftTrigger().onChange(new RunCommand(() -> armBase.setEffort(-Math.pow(m_driverController.getLeftTriggerAxis(), 3)), armBase));
-    otherController.b().whileTrue(new RunCommand(() -> {
-      elevator.setEffort(Math.pow(otherController.getLeftY(), 3));
-      SmartDashboard.putNumber("elevator effort", otherController.getLeftY());
+    //#region Arm
+    //#region Elevator
+    // Tie elevator to left stick Y on arm controller
+    elevator.setDefaultCommand(new RunCommand(() -> {
+      elevator.setEffort(Math.pow(m_armController.getLeftY(), 3));
+      SmartDashboard.putNumber("Elevator Effort", m_armController.getLeftY());
     }, elevator));
-    otherController.rightStick().onChange(new RunCommand(() -> armBase.setEffort(Math.pow(otherController.getRightY(), 3)), armBase));
-    otherController.leftTrigger().onChange(new RunCommand(() -> wrist.setEffort(-Math.pow(otherController.getLeftTriggerAxis(), 3)), wrist));
-    otherController.rightTrigger().onChange(new RunCommand(() -> wrist.setEffort(Math.pow(otherController.getRightTriggerAxis(), 3)), wrist));
-    // wrist.setruetDefaultCommand(new RunCommand(() -> wrist.followValueFromSmartDashboard(), wrist));
+    //#endregion
 
-    // m_driverController.y().debounce(5).toggleOnTrue(
-      // Commands.sequence(
-        // new CalibrateElevator(elevator),
-        // new CalibrateArmPivot(armBase)
-        // new CalibrateWrist(wrist, armBase)
-      // )
-      // );
-    // armExtension.setDefaultCommand(new RunCommand(() -> armExtension.followValueFromSmartDashboard(), armExtension));
+    //#region Arm Pivot
+    // Tie arm pivot to right stick Y on arm controller
+    armBase.setDefaultCommand(new RunCommand(() -> {
+        armBase.setEffort(Math.pow(m_armController.getRightY(), 3));
+        SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
+    }, armBase));
+    //#endregion
+    
+    //#region Wrist
+    // Tie wrist to left and right triggers on arm controller
+    wrist.setDefaultCommand(new RunCommand(() -> {
+      double effort = Math.pow(m_armController.getRightTriggerAxis() - m_armController.getLeftTriggerAxis(), 3);
+      wrist.setEffort(effort);
+      SmartDashboard.putNumber("Wrist Effort", effort);
+    }, wrist));
+    //#endregion
+    //#endregion
   }
 
   /**
@@ -121,13 +150,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    // return Autos.exampleAuto(m_exampleSubsystem);
     drivetrain.resetDisplacement();
     return Autos.imuAuto(drivetrain);
   }
-
-  // public Command getTestCommand() {
-  //   return new RunCommand(() -> airCompressor.go(), airCompressor);
-  // }
 }
