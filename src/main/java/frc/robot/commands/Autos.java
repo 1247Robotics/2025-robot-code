@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import frc.robot.subsystems.ClimbPiston;
 import frc.robot.subsystems.Drivetrain;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,11 +20,13 @@ public final class Autos {
     return Commands.run(() -> drivetrain.arcadeDrive(-0.3, 0), drivetrain).withTimeout(2);
   }
 
-  public static Command imuAuto(Drivetrain drivetrain) {
-    // return Commands.sequence(
-    //   new MoveTo(0, 2.5)
-    // );
-    return new MoveTo(0, 2.5, drivetrain);
+  public static Command imuAuto(Drivetrain drivetrain, ClimbPiston climber) {
+    return Commands.sequence(
+      Commands.runOnce(() -> climber.setActuation(false), climber),
+      Commands.waitSeconds(1),
+      new MoveTo(0, 2.5, drivetrain)
+    );
+    // return new MoveTo(0, 2.5, drivetrain);
 
   }
 

@@ -128,4 +128,8 @@ public class VirtualIMU {
     public double getAvgAccel() {
         return getCollectiveAccel() / 3;
     }
+
+    public AHRS getNavX() {
+        return navx;
+    }
 }

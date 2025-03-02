@@ -24,6 +24,10 @@ public class AirCompressor extends SubsystemBase {
     return new Trigger(() -> comp.getPressure() > 114);
   }
 
+  public Trigger noPressure() {
+    return new Trigger(() -> comp.getPressure() < 5);
+  }
+
   public void pressurize() {
     run();
   }
@@ -37,7 +41,7 @@ public class AirCompressor extends SubsystemBase {
   }
 
   public void dontRun() {
-    comp.disable();
+    stop();
   }
 
   public void stop() {

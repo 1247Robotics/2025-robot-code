@@ -6,12 +6,9 @@ package frc.robot;
 
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.AirCompressor;
-import frc.robot.subsystems.ArmBasePivot;
 import frc.robot.subsystems.ControllerVibration;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.ClimbPiston;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Wrist;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -30,8 +27,8 @@ public class RobotContainer {
   private final CommandXboxController m_driverController       = new CommandXboxController(0);
   private final ControllerVibration   driverVibration          = new ControllerVibration(m_driverController);
 
-  private final CommandXboxController m_armController          = new CommandXboxController(1);
-  private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
+  // private final CommandXboxController m_armController          = new CommandXboxController(1);
+  // private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
   //#endregion
 
   //#region Drivetrain
@@ -44,13 +41,14 @@ public class RobotContainer {
   //#endregion
 
   //#region Arm
-  private final Elevator      elevator            = new Elevator();
-  private final ArmBasePivot  armBase             = new ArmBasePivot();
-  private final Wrist         wrist               = new Wrist();
+  // private final Elevator      elevator            = new Elevator();
+  // private final ArmBasePivot  armBase             = new ArmBasePivot();
+  // private final Wrist         wrist               = new Wrist();
   //#endregion
   
   //#region Variables
   private boolean pistonGo = false;
+  private boolean pumpFailed = false;
   //#endregion
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -78,13 +76,13 @@ public class RobotContainer {
     //#region Compressor
 
     // Run air compressor
-    airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor));
+    airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor).unless(() -> pumpFailed));
 
     // Buzz controllers if pressure is too high
     airCompressor.whileOverPressure().onTrue(
       new RunCommand(() -> {
         driverVibration.setVibration(1);
-        m_armControllerVibration.setVibration(1);
+        // m_armControllerVibration.setVibration(1);
       }, driverVibration)
     );
     //#endregion
@@ -119,27 +117,27 @@ public class RobotContainer {
     //#region Arm
     //#region Elevator
     // Tie elevator to left stick Y on arm controller
-    elevator.setDefaultCommand(new RunCommand(() -> {
-      elevator.setEffort(Math.pow(m_armController.getLeftY(), 3));
-      SmartDashboard.putNumber("Elevator Effort", m_armController.getLeftY());
-    }, elevator));
+    // elevator.setDefaultCommand(new RunCommand(() -> {
+    //   elevator.setEffort(Math.pow(-m_armController.getLeftY(), 3));
+    //   SmartDashboard.putNumber("Elevator Effort", m_armController.getLeftY());
+    // }, elevator));
     //#endregion
 
     //#region Arm Pivot
     // Tie arm pivot to right stick Y on arm controller
-    armBase.setDefaultCommand(new RunCommand(() -> {
-        armBase.setEffort(Math.pow(m_armController.getRightY(), 3));
-        SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
-    }, armBase));
+    // armBase.setDefaultCommand(new RunCommand(() -> {
+    //     armBase.setEffort(Math.pow(m_armController.getRightY(), 3));
+    //     SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
+    // }, armBase));
     //#endregion
     
     //#region Wrist
     // Tie wrist to left and right triggers on arm controller
-    wrist.setDefaultCommand(new RunCommand(() -> {
-      double effort = Math.pow(m_armController.getRightTriggerAxis() - m_armController.getLeftTriggerAxis(), 3);
-      wrist.setEffort(effort);
-      SmartDashboard.putNumber("Wrist Effort", effort);
-    }, wrist));
+    // wrist.setDefaultCommand(new RunCommand(() -> {
+    //   double effort = Math.pow(m_armController.getRightTriggerAxis() - m_armController.getLeftTriggerAxis(), 3);
+    //   wrist.setEffort(effort);
+    //   SmartDashboard.putNumber("Wrist Effort", effort);
+    // }, wrist));
     //#endregion
     //#endregion
   }
@@ -151,6 +149,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     drivetrain.resetDisplacement();
-    return Autos.imuAuto(drivetrain);
+    return Autos.imuAuto(drivetrain, launcherPistonThing);
   }
 }

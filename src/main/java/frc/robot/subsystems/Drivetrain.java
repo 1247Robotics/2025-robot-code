@@ -33,7 +33,8 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void arcadeDrive(double speed, double rotation) {
-    drive.arcadeDrive(speed, rotation);
+    double pitch = pos.getNavX().getPitch() / 45;
+    drive.arcadeDrive(speed - pitch, rotation);
     pos.updateMotors();
     SmartDashboard.putNumber("Angle", pos.getAngle());
     SmartDashboard.putNumber("Y Displacement", getYDisplacement());
