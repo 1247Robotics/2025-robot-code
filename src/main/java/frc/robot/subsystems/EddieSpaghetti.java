@@ -6,13 +6,17 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class EddieSpaghetti extends SubsystemBase {
-    private final Solenoid solenoid = new Solenoid(2, PneumaticsModuleType.REVPH, 0);
+    private final Solenoid solenoid = new Solenoid(1, PneumaticsModuleType.REVPH, 0);
+
+    public EddieSpaghetti() {
+        // solenoid.set(true);
+    }
     
     public void setActuation(boolean value) {
-        solenoid.set(value);
+        solenoid.set(!value);
     }
 
     public void stop() {
-        solenoid.set(false);
+        // solenoid.set(true);
     }
 }

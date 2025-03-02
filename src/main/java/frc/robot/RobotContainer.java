@@ -16,6 +16,8 @@ import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.EddieSpaghetti;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.Wrist;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -32,6 +34,8 @@ public class RobotContainer {
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private final CommandXboxController otherController =
+    new CommandXboxController(1);
 
   // The robot's subsystems and commands are defined here...
   private final Drivetrain drivetrain = new Drivetrain(m_driverController);
@@ -41,7 +45,7 @@ public class RobotContainer {
   private boolean pistonGo = false;
   private final ArmBasePivot armBase = new ArmBasePivot();
   private final Elevator elevator = new Elevator();
-  // private final ArmExtension armExtension = new ArmExtension();
+  // private final ArmExtension armExtension = new ArmExtension(armBase);
   private final Wrist wrist = new Wrist();
 
 
@@ -50,6 +54,8 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureBindings();
     drivetrain.setBrakes(true);
+    // SmartDashboard.putBoolean("Climber", pistonGo);
+    SmartDashboard.setDefaultBoolean("Climber", pistonGo);
   }
 
   /**
@@ -62,30 +68,50 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    // elevator.disableForwardLimit();
+    // elevator.disableReverseLimit();
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
     // new Trigger(m_exampleSubsystem::exampleCondition)
     //     .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-    airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.stop(), airCompressor));
+    airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor));
     drivetrain.setDefaultCommand(new RunCommand(
-      () -> drivetrain.arcadeDrive(m_driverController.getLeftY() * 0.75, m_driverController.getRightX() * 0.75),
+      () -> drivetrain.arcadeDrive(Math.pow(m_driverController.getLeftY(), 3) * 0.65, Math.pow(m_driverController.getRightX(), 3) * 0.65),
       drivetrain)
     );
     m_driverController.a().toggleOnTrue(Commands.run(() -> {
-      pistonGo = !pistonGo;
-      launcherPistonThing.setActuation(pistonGo);
+      SmartDashboard.putBoolean("Climber", true);
+      launcherPistonThing.setActuation(true);
     }));
-    armBase.setDefaultCommand(new RunCommand(() -> armBase.followValueFromSmartDashboard(), armBase));
-    elevator.setDefaultCommand(new RunCommand(() -> elevator.followValueFromSmartDashboard(), elevator));
-    wrist.setDefaultCommand(new RunCommand(() -> wrist.followValueFromSmartDashboard(), wrist));
 
-    m_driverController.y().debounce(5).toggleOnTrue(
+    launcherPistonThing.runOnce(() -> launcherPistonThing.setActuation(false));
+
+    m_driverController.b().toggleOnTrue(Commands.run(() -> {
+      SmartDashboard.putBoolean("Climber", false);
+      launcherPistonThing.setActuation(false);
+    }));
+
+    // armBase.setDefaultCommand(new RunCommand(() -> armBase.followValueFromSmartDashboard(), armBase));
+    // elevator.setDefaultCommand(new RunCommand(() -> elevator.followValueFromSmartDashboard(), elevator));
+    // elevator.setDefaultCommand(new RunCommand(() -> elevator.setEffort(0.4), elevator));
+    // m_driverController.rightTrigger().onChange(new RunCommand(() -> armBase.setEffort(Math.pow(m_driverController.getRightTriggerAxis(), 3)), armBase));
+    // m_driverController.leftTrigger().onChange(new RunCommand(() -> armBase.setEffort(-Math.pow(m_driverController.getLeftTriggerAxis(), 3)), armBase));
+    otherController.b().whileTrue(new RunCommand(() -> {
+      elevator.setEffort(Math.pow(otherController.getLeftY(), 3));
+      SmartDashboard.putNumber("elevator effort", otherController.getLeftY());
+    }, elevator));
+    otherController.rightStick().onChange(new RunCommand(() -> armBase.setEffort(Math.pow(otherController.getRightY(), 3)), armBase));
+    otherController.leftTrigger().onChange(new RunCommand(() -> wrist.setEffort(-Math.pow(otherController.getLeftTriggerAxis(), 3)), wrist));
+    otherController.rightTrigger().onChange(new RunCommand(() -> wrist.setEffort(Math.pow(otherController.getRightTriggerAxis(), 3)), wrist));
+    // wrist.setruetDefaultCommand(new RunCommand(() -> wrist.followValueFromSmartDashboard(), wrist));
+
+    // m_driverController.y().debounce(5).toggleOnTrue(
       // Commands.sequence(
-        new CalibrateElevator(elevator)
-        // new CalibrateArmPivot(armBase),
+        // new CalibrateElevator(elevator),
+        // new CalibrateArmPivot(armBase)
         // new CalibrateWrist(wrist, armBase)
       // )
-      );
+      // );
     // armExtension.setDefaultCommand(new RunCommand(() -> armExtension.followValueFromSmartDashboard(), armExtension));
   }
 
@@ -100,4 +126,8 @@ public class RobotContainer {
     drivetrain.resetDisplacement();
     return Autos.imuAuto(drivetrain);
   }
+
+  // public Command getTestCommand() {
+  //   return new RunCommand(() -> airCompressor.go(), airCompressor);
+  // }
 }

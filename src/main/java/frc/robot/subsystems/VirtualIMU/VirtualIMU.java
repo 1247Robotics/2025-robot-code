@@ -86,7 +86,7 @@ public class VirtualIMU {
     }
 
     public double getAngle() {
-        return navx.getAngle(); // counter the fucked up drivetrain
+        return navx.getAngle();
     }
 
     public double getRadians() {

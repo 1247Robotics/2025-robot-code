@@ -9,8 +9,20 @@ public class AirCompressor extends SubsystemBase {
   private final Compressor comp = new Compressor(PneumaticsModuleType.REVPH);
 
   public void run() {
-    comp.enableAnalog(90, 120);
+    comp.enableHybrid(90, 110);
     SmartDashboard.putNumber("Pneumatics Pressure (PSI)", comp.getPressure());
+  }
+
+  public void pressurize() {
+    run();
+  }
+
+  public void go() {
+    run();
+  }
+
+  public void doTheThing() {
+    run();
   }
 
   public void dontRun() {

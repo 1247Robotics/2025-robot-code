@@ -35,6 +35,7 @@ public class SingleMotorBase extends SubsystemBase {
   protected final double P = 0.025;
   protected final double I = 0.0024;
   protected final double D = 0.0043;
+  protected final double PIDLimits = 0.1;
 
   private double forwardLimit = Double.MAX_VALUE;
   private double reverseLimit = Double.MIN_VALUE;
@@ -62,13 +63,13 @@ public class SingleMotorBase extends SubsystemBase {
       .p(P)
       .i(I)
       .d(D)
-      .outputRange(-1, 1)
+      .outputRange(-PIDLimits, PIDLimits)
 
       .p(P, ClosedLoopSlot.kSlot1)
       .i(I, ClosedLoopSlot.kSlot1)
       .d(D, ClosedLoopSlot.kSlot1)
       .velocityFF(unitsPerRotation, ClosedLoopSlot.kSlot1)
-      .outputRange(-1, 1, ClosedLoopSlot.kSlot1);
+      .outputRange(-PIDLimits, PIDLimits, ClosedLoopSlot.kSlot1);
 
 
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -133,7 +134,7 @@ public class SingleMotorBase extends SubsystemBase {
   /**
    * Disable the forward limit switch
    */
-  protected void disableForwardLimit() {
+  public void disableForwardLimit() {
     config.limitSwitch.forwardLimitSwitchEnabled(false);
     config.softLimit.forwardSoftLimitEnabled(false);
     applyConfig();
@@ -166,7 +167,7 @@ public class SingleMotorBase extends SubsystemBase {
     setReverseLimit(motor.getAbsoluteEncoder().getPosition());
   }
 
-  protected void disableReverseLimit() {
+  public void disableReverseLimit() {
     config.limitSwitch.reverseLimitSwitchEnabled(false);
     config.softLimit.reverseSoftLimitEnabled(false);
     applyConfig();

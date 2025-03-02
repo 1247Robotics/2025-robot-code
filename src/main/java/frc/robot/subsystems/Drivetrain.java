@@ -25,8 +25,10 @@ public class Drivetrain extends SubsystemBase {
   private final CommandXboxController controller;
 
   public Drivetrain(CommandXboxController controller) {
-    R_LEFT.configure(new SparkFlexConfig().follow(F_LEFT), null, null);
-    R_RIGHT.configure(new SparkFlexConfig().follow(F_RIGHT), null, null);
+    F_LEFT.configure(new SparkFlexConfig().idleMode(IdleMode.kCoast), null, null);
+    F_RIGHT.configure(new SparkFlexConfig().idleMode(IdleMode.kCoast), null, null);
+    R_LEFT.configure(new SparkFlexConfig().follow(F_LEFT).idleMode(IdleMode.kCoast), null, null);
+    R_RIGHT.configure(new SparkFlexConfig().follow(F_RIGHT).idleMode(IdleMode.kCoast), null, null);
     pos.resetDisplacement();
     this.controller = controller;
 
