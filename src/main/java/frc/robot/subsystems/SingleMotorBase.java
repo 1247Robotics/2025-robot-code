@@ -32,10 +32,18 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  */
 public class SingleMotorBase extends SubsystemBase {
   protected final SparkMax motor;
-  protected final double P = 0.025;
+  protected final double P = 0.0015;
   protected final double I = 0.0024;
   protected final double D = 0.0043;
   protected final double PIDLimits = 0.1;
+
+  protected final double positionP = P;
+  protected final double positionI = I;
+  protected final double positionD = D;
+
+  protected final double velocityP = P;
+  protected final double velocityI = I;
+  protected final double velocityD = D;
 
   private double forwardLimit = Double.MAX_VALUE;
   private double reverseLimit = Double.MIN_VALUE;
@@ -60,14 +68,14 @@ public class SingleMotorBase extends SubsystemBase {
     config.inverted(invertMotor);
     config.closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .p(P)
-      .i(I)
-      .d(D)
+      .p(positionP)
+      .i(positionI)
+      .d(positionD)
       .outputRange(-PIDLimits, PIDLimits)
 
-      .p(P, ClosedLoopSlot.kSlot1)
-      .i(I, ClosedLoopSlot.kSlot1)
-      .d(D, ClosedLoopSlot.kSlot1)
+      .p(velocityP, ClosedLoopSlot.kSlot1)
+      .i(velocityI, ClosedLoopSlot.kSlot1)
+      .d(velocityD, ClosedLoopSlot.kSlot1)
       .velocityFF(unitsPerRotation, ClosedLoopSlot.kSlot1)
       .outputRange(-PIDLimits, PIDLimits, ClosedLoopSlot.kSlot1);
 
