@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.AirCompressor;
+import frc.robot.subsystems.ArmBasePivot;
 import frc.robot.subsystems.ControllerVibration;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.ClimbPiston;
@@ -27,7 +28,7 @@ public class RobotContainer {
   private final CommandXboxController m_driverController       = new CommandXboxController(0);
   private final ControllerVibration   driverVibration          = new ControllerVibration(m_driverController);
 
-  // private final CommandXboxController m_armController          = new CommandXboxController(1);
+  private final CommandXboxController m_armController          = new CommandXboxController(1);
   // private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
   //#endregion
 
@@ -41,8 +42,8 @@ public class RobotContainer {
   //#endregion
 
   //#region Arm
+  private final ArmBasePivot  armBase             = new ArmBasePivot();
   // private final Elevator      elevator            = new Elevator();
-  // private final ArmBasePivot  armBase             = new ArmBasePivot();
   // private final Wrist         wrist               = new Wrist();
   //#endregion
   
@@ -125,10 +126,10 @@ public class RobotContainer {
 
     //#region Arm Pivot
     // Tie arm pivot to right stick Y on arm controller
-    // armBase.setDefaultCommand(new RunCommand(() -> {
-    //     armBase.setEffort(Math.pow(m_armController.getRightY(), 3));
-    //     SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
-    // }, armBase));
+    armBase.setDefaultCommand(new RunCommand(() -> {
+        armBase.setEffort(Math.pow(m_armController.getLeftY(), 3));
+        SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
+    }, armBase));
     //#endregion
     
     //#region Wrist
