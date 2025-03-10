@@ -35,15 +35,18 @@ public class SingleMotorBase extends SubsystemBase {
   protected final double P = 0.0015;
   protected final double I = 0.0024;
   protected final double D = 0.0043;
+  protected final double F = 0;
   protected final double PIDLimits = 0.1;
 
   protected final double positionP = P;
   protected final double positionI = I;
   protected final double positionD = D;
+  protected final double positionF = F;
 
   protected final double velocityP = P;
   protected final double velocityI = I;
   protected final double velocityD = D;
+  protected final double velocityF = F;
 
   private double forwardLimit = Double.MAX_VALUE;
   private double reverseLimit = Double.MIN_VALUE;
@@ -68,14 +71,16 @@ public class SingleMotorBase extends SubsystemBase {
     config.inverted(invertMotor);
     config.closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .p(positionP)
-      .i(positionI)
-      .d(positionD)
+      // .p(positionP)
+      // .i(positionI)
+      // .d(positionD)
+      .pidf(positionP, positionI, positionD, positionF)
       .outputRange(-PIDLimits, PIDLimits)
 
-      .p(velocityP, ClosedLoopSlot.kSlot1)
-      .i(velocityI, ClosedLoopSlot.kSlot1)
-      .d(velocityD, ClosedLoopSlot.kSlot1)
+      // .p(velocityP, ClosedLoopSlot.kSlot1)
+      // .i(velocityI, ClosedLoopSlot.kSlot1)
+      // .d(velocityD, ClosedLoopSlot.kSlot1)
+      .pidf(velocityP, velocityI, velocityD, velocityF, ClosedLoopSlot.kSlot0)
       .velocityFF(unitsPerRotation, ClosedLoopSlot.kSlot1)
       .outputRange(-PIDLimits, PIDLimits, ClosedLoopSlot.kSlot1);
 

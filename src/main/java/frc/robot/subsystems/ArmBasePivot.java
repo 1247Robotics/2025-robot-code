@@ -9,7 +9,7 @@ public class ArmBasePivot extends SingleMotorBase {
   private static final double gearRatio = 1.0 / 60.0;
 
   public ArmBasePivot() {
-    super(20, gearRatio, "Arm Base Pivot", false);
+    super(20, gearRatio, "Arm Position", false);
   }
 
   @Override

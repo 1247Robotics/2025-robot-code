@@ -28,7 +28,7 @@ public class RobotContainer {
   private final CommandXboxController m_driverController       = new CommandXboxController(0);
   private final ControllerVibration   driverVibration          = new ControllerVibration(m_driverController);
 
-  private final CommandXboxController m_armController          = new CommandXboxController(1);
+  // private final CommandXboxController m_armController          = new CommandXboxController(1);
   // private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
   //#endregion
 
@@ -58,6 +58,7 @@ public class RobotContainer {
     configureBindings();
     drivetrain.setBrakes(true);
     SmartDashboard.setDefaultBoolean("Climber", pistonGo);
+    SmartDashboard.putNumber("Arm Position", armBase.getPosition());
   }
 
   /**
@@ -126,9 +127,13 @@ public class RobotContainer {
 
     //#region Arm Pivot
     // Tie arm pivot to right stick Y on arm controller
-    armBase.setDefaultCommand(new RunCommand(() -> {
-        armBase.setEffort(Math.pow(m_armController.getLeftY(), 3));
-        SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
+    // armBase.setDefaultCommand(new RunCommand(() -> {
+    //     armBase.setEffort(Math.pow(m_armController.getLeftY(), 3));
+    //     SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
+    // }, armBase));
+    armBase.setDefaultCommand(Commands.run(() -> {
+      SmartDashboard.putNumber("Arm Position", 0);
+      armBase.followValueFromSmartDashboard();
     }, armBase));
     //#endregion
     
