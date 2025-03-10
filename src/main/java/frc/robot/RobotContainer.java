@@ -5,6 +5,8 @@
 package frc.robot;
 
 import frc.robot.commands.Autos;
+import frc.robot.commands.LowerArmUntilStopped;
+import frc.robot.commands.RaiseArmUntilStopped;
 import frc.robot.subsystems.AirCompressor;
 import frc.robot.subsystems.ArmBasePivot;
 import frc.robot.subsystems.ControllerVibration;
@@ -33,12 +35,12 @@ public class RobotContainer {
   //#endregion
 
   //#region Drivetrain
-  private final Drivetrain    drivetrain          = new Drivetrain();
+  // private final Drivetrain    drivetrain          = new Drivetrain();
   //#endregion
 
   //#region Pneumatics
-  private final AirCompressor airCompressor       = new AirCompressor();
-  private final ClimbPiston   launcherPistonThing = new ClimbPiston();
+  // private final AirCompressor airCompressor       = new AirCompressor();
+  // private final ClimbPiston   launcherPistonThing = new ClimbPiston();
   //#endregion
 
   //#region Arm
@@ -49,16 +51,16 @@ public class RobotContainer {
   
   //#region Variables
   private boolean pistonGo = false;
-  private boolean pumpFailed = false;
+  // private boolean pumpFailed = false;
   //#endregion
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    drivetrain.setBrakes(true);
+    // drivetrain.setBrakes(true);
     SmartDashboard.setDefaultBoolean("Climber", pistonGo);
-    SmartDashboard.putNumber("Arm Position", armBase.getPosition());
+    SmartDashboard.setDefaultNumber("Arm Position", 0);
   }
 
   /**
@@ -72,48 +74,48 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // IMU haptics
-    driverVibration.setDefaultCommand(
-      new RunCommand(() -> driverVibration.setVibration(drivetrain.getIMURumble()), driverVibration));
+    // driverVibration.setDefaultCommand(
+      // new RunCommand(() -> driverVibration.setVibration(drivetrain.getIMURumble()), driverVibration));
       
     //#region Compressor
 
     // Run air compressor
-    airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor).unless(() -> pumpFailed));
+    // airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor).unless(() -> pumpFailed));
 
-    // Buzz controllers if pressure is too high
-    airCompressor.whileOverPressure().onTrue(
-      new RunCommand(() -> {
-        driverVibration.setVibration(1);
-        // m_armControllerVibration.setVibration(1);
-      }, driverVibration)
-    );
+    // // Buzz controllers if pressure is too high
+    // airCompressor.whileOverPressure().onTrue(
+    //   new RunCommand(() -> {
+    //     driverVibration.setVibration(1);
+    //     // m_armControllerVibration.setVibration(1);
+    //   }, driverVibration)
+    // );
     //#endregion
 
     //#region Drivetrain 
 
     // Tie drivetrain to driver's controller 
-    drivetrain.setDefaultCommand(new RunCommand(
-      () -> drivetrain.arcadeDrive(Math.pow(m_driverController.getLeftY(), 3) * 0.65, Math.pow(m_driverController.getRightX(), 3) * 0.65),
-      drivetrain)
-    );
+    // drivetrain.setDefaultCommand(new RunCommand(
+    //   () -> drivetrain.arcadeDrive(Math.pow(m_driverController.getLeftY(), 3) * 0.65, Math.pow(m_driverController.getRightX(), 3) * 0.65),
+    //   drivetrain)
+    // );
 
     //#endregion
 
     //#region Climb piston
     // Retract solenoid on start
-    launcherPistonThing.runOnce(() -> launcherPistonThing.setActuation(false));
+    // launcherPistonThing.runOnce(() -> launcherPistonThing.setActuation(false));
 
-    // Engage climb solenoid
-    m_driverController.a().debounce(0.2).onTrue(Commands.run(() -> {
-      SmartDashboard.putBoolean("Climber", true);
-      launcherPistonThing.setActuation(true);
-    }));
+    // // Engage climb solenoid
+    // m_driverController.a().debounce(0.2).onTrue(Commands.run(() -> {
+    //   SmartDashboard.putBoolean("Climber", true);
+    //   launcherPistonThing.setActuation(true);
+    // }));
 
-    // Disengage climb solenoid
-    m_driverController.b().onTrue(Commands.run(() -> {
-      SmartDashboard.putBoolean("Climber", false);
-      launcherPistonThing.setActuation(false);
-    }));
+    // // Disengage climb solenoid
+    // m_driverController.b().onTrue(Commands.run(() -> {
+    //   SmartDashboard.putBoolean("Climber", false);
+    //   launcherPistonThing.setActuation(false);
+    // }));
     //#endregion
 
     //#region Arm
@@ -132,9 +134,15 @@ public class RobotContainer {
     //     SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
     // }, armBase));
     armBase.setDefaultCommand(Commands.run(() -> {
-      SmartDashboard.putNumber("Arm Position", 0);
-      armBase.followValueFromSmartDashboard();
+      // SmartDashboard.putNumber("Arm at", armBase.getPosition());
+      // armBase.followValueFromSmartDashboard();
+      // armBase.setPosition(0);
+      armBase.setEffort(m_driverController.getRightY());
     }, armBase));
+    m_driverController.b().debounce(1).onTrue(Commands.sequence(
+      new LowerArmUntilStopped(armBase),
+      new RaiseArmUntilStopped(armBase)
+    ));
     //#endregion
     
     //#region Wrist
@@ -154,7 +162,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    drivetrain.resetDisplacement();
-    return Autos.imuAuto(drivetrain, launcherPistonThing);
+    // drivetrain.resetDisplacement();
+    // return Autos.imuAuto(drivetrain);
+    return new RunCommand(() -> {}, null);
   }
 }

@@ -2,14 +2,14 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.ArmBasePivot;
 
-public class RaiseElevatorUntilStopped extends Command {
-  private Elevator elevator;
+public class RaiseArmUntilStopped extends Command {
+  private ArmBasePivot motor;
   private Timer timeSinceStart = new Timer();
 
-  public RaiseElevatorUntilStopped(Elevator elevator) {
-    this.elevator = elevator;
+  public RaiseArmUntilStopped(ArmBasePivot elevator) {
+    this.motor = elevator;
     addRequirements(elevator);
   }
 
@@ -20,16 +20,16 @@ public class RaiseElevatorUntilStopped extends Command {
 
   @Override
   public void execute() {
-    elevator.setVelocity(0.5);
+    motor.setEffort(0.2);
   }
 
   @Override
   public boolean isFinished() {
-    if (timeSinceStart.get() < 0.5) return false;
-    boolean atTop = elevator.getVelocity() < 0.1;
+    if (timeSinceStart.get() < 1) return false;
+    boolean atTop = Math.abs(motor.getVelocity()) < 1200;
 
     if (atTop) {
-      elevator.atTop();
+      motor.atFrontLimit();
     }
 
     return atTop;

@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -141,7 +142,7 @@ public class SingleMotorBase extends SubsystemBase {
    * Set the forward limit switch to the current position of the motor.
    */
   protected void setForwardLimit() {
-    setForwardLimit(motor.getAbsoluteEncoder().getPosition());
+    setForwardLimit(motor.getEncoder().getPosition());
   }
 
   /**
@@ -177,7 +178,7 @@ public class SingleMotorBase extends SubsystemBase {
    * Set the reverse limit to the current position of the motor
    */
   protected void setReverseLimit() {
-    setReverseLimit(motor.getAbsoluteEncoder().getPosition());
+    setReverseLimit(motor.getEncoder().getPosition());
   }
 
   public void disableReverseLimit() {
@@ -217,11 +218,11 @@ public class SingleMotorBase extends SubsystemBase {
   }
 
   public double getPosition() {
-    return motor.getAbsoluteEncoder().getPosition();
+    return motor.getEncoder().getPosition();
   }
 
   public double getVelocity() {
-    return motor.getAbsoluteEncoder().getVelocity();
+    return motor.getEncoder().getVelocity();
   }
 
   public double getForwardLimit() {
@@ -238,11 +239,12 @@ public class SingleMotorBase extends SubsystemBase {
       return;
     }
 
-    double position = SmartDashboard.getNumber(SmartDashboardKey, reverseLimit);
-    if (position <= reverseLimit) {
-      position = (reverseLimit + forwardLimit) / 2;
-      SmartDashboard.putNumber(SmartDashboardKey, position);
-    }
+    double position = SmartDashboard.getNumber(SmartDashboardKey, 0);
+    // if (position <= reverseLimit) {
+    //   position = (reverseLimit + forwardLimit) / 2;
+    //   SmartDashboard.putNumber(SmartDashboardKey, position);
+    // }
+    SmartDashboard.putNumber("the", position);
     setPosition(position);
   }
 

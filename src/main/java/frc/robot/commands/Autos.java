@@ -20,9 +20,12 @@ public final class Autos {
     return Commands.run(() -> drivetrain.arcadeDrive(-0.3, 0), drivetrain).withTimeout(2);
   }
 
-  public static Command imuAuto(Drivetrain drivetrain, ClimbPiston climber) {
+  public static Command imuAuto(
+    Drivetrain drivetrain
+    // ClimbPiston climber
+    ) {
     return Commands.sequence(
-      Commands.runOnce(() -> climber.setActuation(false), climber),
+      // Commands.runOnce(() -> climber.setActuation(false), climber),
       Commands.waitSeconds(1),
       new MoveTo(0, 2.5, drivetrain)
     );
