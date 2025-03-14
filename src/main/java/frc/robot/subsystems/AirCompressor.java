@@ -8,10 +8,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class AirCompressor extends SubsystemBase {
-  private final Compressor comp = new Compressor(PneumaticsModuleType.REVPH);
+  private final Compressor comp = new Compressor(PneumaticsModuleType.CTREPCM);
 
   public void run() {
-    comp.enableHybrid(90, 110);
+    // comp.enableHybrid(90, 110);
+    comp.enableDigital();
     SmartDashboard.putNumber("Pneumatics Pressure (PSI)", comp.getPressure());
     SmartDashboard.putBoolean("Running Air Compressor", comp.getCurrent() > 0.1);
     if (comp.getPressure() > 114) {
