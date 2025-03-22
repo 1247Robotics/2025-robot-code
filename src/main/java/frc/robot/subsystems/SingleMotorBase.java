@@ -13,7 +13,6 @@ import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -39,22 +38,28 @@ public class SingleMotorBase extends SubsystemBase {
   protected final double F = 0;
   protected final double PIDLimits = 0.1;
 
-  protected final double positionP = P;
-  protected final double positionI = I;
-  protected final double positionD = D;
-  protected final double positionF = F;
-
-  protected final double velocityP = P;
-  protected final double velocityI = I;
-  protected final double velocityD = D;
-  protected final double velocityF = F;
-
   private double forwardLimit = Double.MAX_VALUE;
   private double reverseLimit = Double.MIN_VALUE;
 
   protected final SparkClosedLoopController closedLoop;
 
   protected final String SmartDashboardKey;
+
+  protected double getPIDLimits() {
+    return PIDLimits;
+  }
+
+  protected double getPositionP() {
+    return P;
+  }
+
+  protected double getPositionI() {
+    return I;
+  }
+
+  protected double getPositionD() {
+    return D;
+  }
 
   protected static double CalculateCircumference(double diameter) {
     return Math.PI * diameter;
@@ -67,23 +72,24 @@ public class SingleMotorBase extends SubsystemBase {
     motor.clearFaults();
 
     config.idleMode(IdleMode.kBrake);
-    config.absoluteEncoder.positionConversionFactor(unitsPerRotation);
-    config.absoluteEncoder.velocityConversionFactor(unitsPerRotation);
+    config.encoder.positionConversionFactor(unitsPerRotation);
+    config.encoder.velocityConversionFactor(unitsPerRotation);
     config.inverted(invertMotor);
     config.closedLoop
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      // .p(positionP)
-      // .i(positionI)
-      // .d(positionD)
-      .pidf(positionP, positionI, positionD, positionF)
-      .outputRange(-PIDLimits, PIDLimits)
+      .p(getPositionP())
+      .i(getPositionI())
+      .d(getPositionD())
+      // .pidf(positionP, positionI, positionD, positionF)
+      .outputRange(-getPIDLimits(), getPIDLimits())
 
       // .p(velocityP, ClosedLoopSlot.kSlot1)
       // .i(velocityI, ClosedLoopSlot.kSlot1)
       // .d(velocityD, ClosedLoopSlot.kSlot1)
-      .pidf(velocityP, velocityI, velocityD, velocityF, ClosedLoopSlot.kSlot0)
-      .velocityFF(unitsPerRotation, ClosedLoopSlot.kSlot1)
-      .outputRange(-PIDLimits, PIDLimits, ClosedLoopSlot.kSlot1);
+      // .pidf(velocityP, velocityI, velocityD, velocityF, ClosedLoopSlot.kSlot0)
+      // .velocityFF(unitsPerRotation, ClosedLoopSlot.kSlot1)
+      // .outputRange(-PIDLimits, PIDLimits, ClosedLoopSlot.kSlot1);
+      ;
 
 
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -203,8 +209,12 @@ public class SingleMotorBase extends SubsystemBase {
     onTick();
   }
 
+  protected void resetPosition(double setPosition) {
+    motor.getEncoder().setPosition(setPosition);
+  }
+
   protected void resetPosition() {
-    motor.getEncoder().setPosition(0);
+    resetPosition(0);
   }
 
   public void setVelocity(double target) {
@@ -219,6 +229,14 @@ public class SingleMotorBase extends SubsystemBase {
 
   public double getPosition() {
     return motor.getEncoder().getPosition();
+  }
+
+  public double getRadians() {
+    return getPosition() * 2 * Math.PI;
+  }
+
+  public void setRadians(double position) {
+    setPosition(position / (2 * Math.PI));
   }
 
   public double getVelocity() {

@@ -5,12 +5,17 @@
 package frc.robot;
 
 import frc.robot.commands.Autos;
-import frc.robot.commands.LowerArmUntilStopped;
-import frc.robot.commands.RaiseArmUntilStopped;
+import frc.robot.commands.CalibrateArm;
+import frc.robot.commands.MoveArm;
+import frc.robot.commands.MoveExtension;
+import frc.robot.commands.ControlledMotor;
+import frc.robot.commands.HoldWristRelativeToEarth;
 import frc.robot.subsystems.AirCompressor;
 import frc.robot.subsystems.ArmBasePivot;
 import frc.robot.subsystems.ControllerVibration;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Extension;
+import frc.robot.subsystems.Wrist;
 import frc.robot.subsystems.ClimbPiston;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,8 +35,8 @@ public class RobotContainer {
   private final CommandXboxController m_driverController       = new CommandXboxController(0);
   private final ControllerVibration   driverVibration          = new ControllerVibration(m_driverController);
 
-  // private final CommandXboxController m_armController          = new CommandXboxController(1);
-  // private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
+  private final CommandXboxController m_armController          = new CommandXboxController(1);
+  private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
   //#endregion
 
   //#region Drivetrain
@@ -44,9 +49,9 @@ public class RobotContainer {
   //#endregion
 
   //#region Arm
-  private final ArmBasePivot  armBase             = new ArmBasePivot();
-  // private final Elevator      elevator            = new Elevator();
-  // private final Wrist         wrist               = new Wrist();
+  private final ArmBasePivot armBase  = new ArmBasePivot();
+  private final Extension    extension = new Extension();
+  private final Wrist        wrist    = new Wrist();
   //#endregion
   
   //#region Variables
@@ -83,19 +88,19 @@ public class RobotContainer {
     airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor));
 
     // // Buzz controllers if pressure is too high
-    airCompressor.whileOverPressure().onTrue(
-      new RunCommand(() -> {
-        driverVibration.setVibration(1);
-        // m_armControllerVibration.setVibration(1);
-      }, driverVibration)
-    );
+    // airCompressor.whileOverPressure().onTrue(
+    //   new RunCommand(() -> {
+    //     driverVibration.setVibration(1);
+    //     m_armControllerVibration.setVibration(1);
+    //   }, driverVibration)
+    // );
     //#endregion
 
     //#region Drivetrain 
 
     // Tie drivetrain to driver's controller 
     drivetrain.setDefaultCommand(new RunCommand(
-      () -> drivetrain.arcadeDrive(Math.pow(m_driverController.getLeftY(), 3) * 0.65, Math.pow(m_driverController.getRightX(), 3) * 0.65),
+      () -> drivetrain.arcadeDrive((Math.pow(m_driverController.getLeftY() * 1, 1) + m_driverController.getRightY()) * 0.75, Math.pow(m_driverController.getRightX() * 1, 1) * 0.75),
       drivetrain)
     );
 
@@ -106,49 +111,53 @@ public class RobotContainer {
     // launcherPistonThing.runOnce(() -> launcherPistonThing.setActuation(false));
 
     // // Engage climb solenoid
-    m_driverController.a().onTrue(Commands.run(() -> {
+    m_driverController.a().debounce(0.25).whileTrue(Commands.run(() -> {
       SmartDashboard.putBoolean("Climber", true);
       launcherPistonThing.setActuation(true);
     }));
 
     // // Disengage climb solenoid
-    m_driverController.b().onTrue(Commands.run(() -> {
+    m_driverController.b().debounce(0.25).whileTrue(Commands.run(() -> {
       SmartDashboard.putBoolean("Climber", false);
       launcherPistonThing.setActuation(false);
     }));
+
+    launcherPistonThing.extended().whileTrue(Commands.sequence(
+      new MoveArm(armBase, 1.55),
+      new MoveExtension(extension, 0.1)
+     ));
     //#endregion
 
     //#region Arm
     //#region Elevator
     // Tie elevator to left stick Y on arm controller
-    // elevator.setDefaultCommand(new RunCommand(() -> {
-    //   elevator.setEffort(Math.pow(-m_armController.getLeftY(), 3));
-    //   SmartDashboard.putNumber("Elevator Effort", m_armController.getLeftY());
-    // }, elevator));
+    extension.setDefaultCommand(new RunCommand(() -> {
+      extension.setEffort(Math.pow(-m_armController.getLeftY(), 3));
+      SmartDashboard.putNumber("Elevator Effort", m_armController.getLeftY());
+      SmartDashboard.putNumber("Elevator Position", extension.getPosition());
+    }, extension));
     //#endregion
 
     //#region Arm Pivot
     // Tie arm pivot to right stick Y on arm controller
-    // armBase.setDefaultCommand(new RunCommand(() -> {
-    //     armBase.setEffort(Math.pow(m_armController.getLeftY(), 3));
-    //     SmartDashboard.putNumber("Arm Pivot Effort", m_armController.getLeftY());
-    // }, armBase));
-    armBase.setDefaultCommand(Commands.run(() -> {
-      // SmartDashboard.putNumber("Arm at", armBase.getPosition());
-      // armBase.followValueFromSmartDashboard();
-      // armBase.setPosition(0);
-      armBase.setEffort(m_driverController.getRightY());
-    }, armBase));
-    m_driverController.b().debounce(1).onTrue(Commands.sequence(
-      new LowerArmUntilStopped(armBase),
-      new RaiseArmUntilStopped(armBase)
-    ));
+    armBase.setDefaultCommand(new ControlledMotor(armBase, () -> m_armController.getRightY() * 0.3));
+    extension.setDefaultCommand(new ControlledMotor(extension, m_armController::getLeftY));
+    wrist.setDefaultCommand(new ControlledMotor(wrist, () -> Math.pow(m_armController.getRightTriggerAxis() - m_armController.getLeftTriggerAxis(), 3)));
+
+    m_armController.rightBumper().whileTrue(Commands.parallel(
+      new HoldWristRelativeToEarth(armBase, wrist),
+      Commands.run(() -> {
+        drivetrain.setMultiplier(0.75);
+      })
+      ));
+    m_armController.y().debounce(1).onTrue(new CalibrateArm(armBase, extension, wrist));
+
     //#endregion
     
     //#region Wrist
     // Tie wrist to left and right triggers on arm controller
     // wrist.setDefaultCommand(new RunCommand(() -> {
-    //   double effort = Math.pow(m_armController.getRightTriggerAxis() - m_armController.getLeftTriggerAxis(), 3);
+    //   double effort = Math.pow(m_driverController.getRightTriggerAxis() - m_driverController.getLeftTriggerAxis(), 3);
     //   wrist.setEffort(effort);
     //   SmartDashboard.putNumber("Wrist Effort", effort);
     // }, wrist));
@@ -163,7 +172,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // drivetrain.resetDisplacement();
-    // return Autos.imuAuto(drivetrain);
-    return new RunCommand(() -> {}, null);
+    return Autos.imuAuto(drivetrain);
+    // return new RunCommand(() -> {}, null);
   }
 }

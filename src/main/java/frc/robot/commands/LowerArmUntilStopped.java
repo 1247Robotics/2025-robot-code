@@ -15,6 +15,9 @@ public class LowerArmUntilStopped extends Command {
 
   @Override
   public void initialize() {
+    timeSinceStart.reset();
+    motor.disableForwardLimit();
+    motor.disableReverseLimit();
     timeSinceStart.start();
   }
 
@@ -25,11 +28,12 @@ public class LowerArmUntilStopped extends Command {
 
   @Override
   public boolean isFinished() {
-    if (timeSinceStart.get() < 1) return false;
-    boolean atTop = Math.abs(motor.getVelocity()) < 615;
+    if (timeSinceStart.get() < 0.5) return false;
+    boolean atTop = Math.abs(motor.getVelocity()) < 4.5;
 
     if (atTop) {
       motor.atRearLimit();
+      System.out.println("Reached end of arm base");
     }
 
     return atTop;
