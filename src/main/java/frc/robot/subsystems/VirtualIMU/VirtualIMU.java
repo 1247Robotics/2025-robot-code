@@ -18,9 +18,9 @@ public class VirtualIMU {
     public VirtualIMU(SparkFlex left, SparkFlex right) {
         x = 0;
         y = 0;
-        // theta = 0;
-        leftMotor = new TrackMotor(6, 8.46);
-        rightMotor = new TrackMotor(6, 8.46);
+        double wheelDiameter = 6.0933;
+        leftMotor  = new TrackMotor(wheelDiameter * 0.0254, 8.45);
+        rightMotor = new TrackMotor(wheelDiameter * 0.0254, 8.45);
         leftMotor.setMotor(left);
         rightMotor.setMotor(right);
     }

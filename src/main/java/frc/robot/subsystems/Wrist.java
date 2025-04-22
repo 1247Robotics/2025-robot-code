@@ -34,14 +34,16 @@ public class Wrist extends SingleMotorBase {
 
   public Wrist() {
     super(23, gearRatio * gearsRatio, "Wrist Pivot", true);
+    atStart();
+    resetPosition(0.47);
   }
 
   @Override
   protected void onTick() {
     SmartDashboard.putNumber("Wrist Position", getPosition());
-    if (homingSwitch.get()) {
-      atStart();
-    }
+    // if (homingSwitch.get()) {
+    //   atStart();
+    // }
   }
 
   public boolean isHome() {

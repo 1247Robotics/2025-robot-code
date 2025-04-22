@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Drivetrain;
 
@@ -11,11 +12,11 @@ public class MoveTo extends Command {
   protected final Drivetrain drivetrain;
   protected double X;
   protected double Y;
-  private final double P = 0.025;
+  private final double P = 0.015;
   private final double I = 0.0024;
   private final double D = 0.0043;
   private final PIDController forwardPID = new PIDController(P, I, D);
-  private final PIDController anglePID = new PIDController(P, I, D);
+  private final PIDController anglePID = new PIDController(0.03, 0, 0);
   private final double forwardLimit;
   private final double turningLimit;
   private boolean inverse = false;
@@ -33,7 +34,7 @@ public class MoveTo extends Command {
     this.drivetrain = drivetrain;
     this.X = X;
     this.Y = Y;
-    forwardLimit = 0.5;
+    forwardLimit = 0.6;
     turningLimit = 0.6;
     addRequirements(drivetrain);
   }
@@ -62,7 +63,8 @@ public class MoveTo extends Command {
     final double turnAmount = -(getOffAngle() / (2*Math.PI)) * 360;
     final double distance = getDistance() * 40;
 
-    final double turn = -clamp(anglePID.calculate(turnAmount * 2,  0), -turningLimit, turningLimit);
+    
+    final double turn = clamp(anglePID.calculate(turnAmount * 2,  0), -turningLimit, turningLimit);
     // final double turn = clamp(turnAmount / 180, -0.6, 0.6);
     final double move = clamp(forwardPID.calculate(distance * 1, 0) * multiplier, -forwardLimit, forwardLimit) * 0.8;
     // final double move = -clamp(distance, -0.4, 0.4) * multiplier;
@@ -113,7 +115,8 @@ public class MoveTo extends Command {
     final double backward2 = backward1 - (2 * Math.PI);
     final double backward = leastSignificant(backward1, backward2);
     
-    return closerToZero(forward, backward);
+    // return closerToZero(forward, backward);
+    return forward;
   }
 
   private double getDistance() {
@@ -124,7 +127,7 @@ public class MoveTo extends Command {
 
   private double getTurnMultiplier() {
     final double offAngle = getOffAngle() / Math.PI;
-    return clamp(-(Math.abs(offAngle) - 1), -1, 1) * (inverse ? -1 : 1);
+    return clamp(-(Math.abs(offAngle) - 1), -1, 1) * (false ? -1 : 1);
   }
 
   @Override

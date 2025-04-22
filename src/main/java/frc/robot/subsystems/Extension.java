@@ -33,11 +33,14 @@ public class Extension extends SingleMotorBase {
     // setForwardLimit(38);
     SmartDashboard.setDefaultNumber("Extension Position", getPosition());
     SmartDashboard.setDefaultNumber("Extension Distance", getExtensionDistance());
+
+    atRetractionLimit();
+    resetPosition(0.24);
   }
 
   @Override
   protected void onTick() {
-    SmartDashboard.putNumber("Extension Position", this.getPosition());
+    SmartDashboard.putNumber("Extension Position", getPosition());
     SmartDashboard.putNumber("Extension Distance", getPosition());
     SmartDashboard.putNumber("Extension Velocity", getVelocity());
   }
@@ -57,7 +60,7 @@ public class Extension extends SingleMotorBase {
   public void atRetractionLimit() {
     resetPosition();
     
-    setReverseLimit(0.2);
+    setReverseLimit(0.25);
     setForwardLimit(10);
   }
 }

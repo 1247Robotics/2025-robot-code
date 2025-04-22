@@ -34,6 +34,10 @@ public class ArmBasePivot extends SingleMotorBase {
 
   public ArmBasePivot() {
     super(20, gearRatio * beltGearRatio, "Arm Position", false);
+    resetPosition(0.03 / (2 * Math.PI));
+    atRearLimit();
+    resetPosition(0.03 / (2*Math.PI));
+
 
   }
 

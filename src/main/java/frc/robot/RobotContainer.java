@@ -17,6 +17,7 @@ import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Extension;
 import frc.robot.subsystems.Wrist;
 import frc.robot.subsystems.ClimbPiston;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,7 +37,7 @@ public class RobotContainer {
   private final ControllerVibration   driverVibration          = new ControllerVibration(m_driverController);
 
   private final CommandXboxController m_armController          = new CommandXboxController(1);
-  private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
+  // private final ControllerVibration   m_armControllerVibration = new ControllerVibration(m_armController);
   //#endregion
 
   //#region Drivetrain
@@ -44,8 +45,8 @@ public class RobotContainer {
   //#endregion
 
   //#region Pneumatics
-  private final AirCompressor airCompressor       = new AirCompressor();
-  private final ClimbPiston   launcherPistonThing = new ClimbPiston();
+  // private final AirCompressor airCompressor       = new AirCompressor();
+  // private final ClimbPiston   launcherPistonThing = new ClimbPiston();
   //#endregion
 
   //#region Arm
@@ -79,28 +80,19 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // IMU haptics
-    driverVibration.setDefaultCommand(
-      new RunCommand(() -> driverVibration.setVibration(drivetrain.getIMURumble()), driverVibration));
+    driverVibration.setDefaultCommand(new RunCommand(() -> driverVibration.setVibration(drivetrain.getIMURumble()), driverVibration));
       
     //#region Compressor
 
     // Run air compressor
-    airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor));
-
-    // // Buzz controllers if pressure is too high
-    // airCompressor.whileOverPressure().onTrue(
-    //   new RunCommand(() -> {
-    //     driverVibration.setVibration(1);
-    //     m_armControllerVibration.setVibration(1);
-    //   }, driverVibration)
-    // );
+    // airCompressor.setDefaultCommand(new RunCommand(() -> airCompressor.run(), airCompressor));
     //#endregion
 
     //#region Drivetrain 
 
     // Tie drivetrain to driver's controller 
     drivetrain.setDefaultCommand(new RunCommand(
-      () -> drivetrain.arcadeDrive((Math.pow(m_driverController.getLeftY() * 1, 1) + m_driverController.getRightY()) * 0.75, Math.pow(m_driverController.getRightX() * 1, 1) * 0.75),
+      () -> drivetrain.arcadeDrive((m_driverController.getLeftY() + m_driverController.getRightY()) * 0.75, m_driverController.getRightX() * 0.75),
       drivetrain)
     );
 
@@ -111,21 +103,21 @@ public class RobotContainer {
     // launcherPistonThing.runOnce(() -> launcherPistonThing.setActuation(false));
 
     // // Engage climb solenoid
-    m_driverController.a().debounce(0.25).whileTrue(Commands.run(() -> {
-      SmartDashboard.putBoolean("Climber", true);
-      launcherPistonThing.setActuation(true);
-    }));
+    // m_driverController.a().debounce(0.25).whileTrue(Commands.run(() -> {
+    //   SmartDashboard.putBoolean("Climber", true);
+    //   launcherPistonThing.setActuation(true);
+    // }));
 
     // // Disengage climb solenoid
-    m_driverController.b().debounce(0.25).whileTrue(Commands.run(() -> {
-      SmartDashboard.putBoolean("Climber", false);
-      launcherPistonThing.setActuation(false);
-    }));
+    // m_driverController.b().debounce(0.25).whileTrue(Commands.run(() -> {
+    //   SmartDashboard.putBoolean("Climber", false);
+    //   launcherPistonThing.setActuation(false);
+    // }));
 
-    launcherPistonThing.extended().whileTrue(Commands.sequence(
-      new MoveArm(armBase, 1.55),
-      new MoveExtension(extension, 0.1)
-     ));
+    // launcherPistonThing.extended().whileTrue(Commands.sequence(
+    //   new MoveArm(armBase, 2.05),
+    //   new MoveExtension(extension, 0.1)
+    //  ));
     //#endregion
 
     //#region Arm
@@ -145,22 +137,21 @@ public class RobotContainer {
     wrist.setDefaultCommand(new ControlledMotor(wrist, () -> Math.pow(m_armController.getRightTriggerAxis() - m_armController.getLeftTriggerAxis(), 3)));
 
     m_armController.rightBumper().whileTrue(Commands.parallel(
-      new HoldWristRelativeToEarth(armBase, wrist),
-      Commands.run(() -> {
-        drivetrain.setMultiplier(0.75);
-      })
+      new HoldWristRelativeToEarth(armBase, wrist)
+      // Commands.run(() -> {
+      //   drivetrain.setMultiplier(0.75);
+      // })
       ));
-    m_armController.y().debounce(1).onTrue(new CalibrateArm(armBase, extension, wrist));
-
+    m_armController.y().debounce(1).onTrue(new CalibrateArm(armBase, extension, wrist, m_armController));
     //#endregion
     
     //#region Wrist
     // Tie wrist to left and right triggers on arm controller
-    // wrist.setDefaultCommand(new RunCommand(() -> {
-    //   double effort = Math.pow(m_driverController.getRightTriggerAxis() - m_driverController.getLeftTriggerAxis(), 3);
-    //   wrist.setEffort(effort);
-    //   SmartDashboard.putNumber("Wrist Effort", effort);
-    // }, wrist));
+    wrist.setDefaultCommand(new RunCommand(() -> {
+      double effort = Math.pow(m_driverController.getRightTriggerAxis() - m_driverController.getLeftTriggerAxis(), 3);
+      wrist.setEffort(effort);
+      SmartDashboard.putNumber("Wrist Effort", effort);
+    }, wrist));
     //#endregion
     //#endregion
   }
@@ -172,7 +163,13 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // drivetrain.resetDisplacement();
-    return Autos.imuAuto(drivetrain);
+    return Autos.imuAuto(
+      drivetrain
+      // armBase,
+      // extension,
+      // wrist,
+      // m_armController
+      );
     // return new RunCommand(() -> {}, null);
   }
 }

@@ -20,7 +20,6 @@ public class Drivetrain extends SubsystemBase {
   private final SparkFlex R_RIGHT = new SparkFlex(14, MotorType.kBrushless);
   private final DifferentialDrive drive = new DifferentialDrive(F_LEFT, F_RIGHT);
   private final VirtualIMU pos = new VirtualIMU(F_LEFT, F_RIGHT);
-  private double multiplier = 1;
   // private final CommandXboxController controller;
 
   public Drivetrain() {
@@ -34,18 +33,13 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void arcadeDrive(double speed, double rotation) {
-    // double pitch = pos.getNavX().getPitch() / 45;
-    speed *= multiplier;
-    rotation *= multiplier;
-    drive.arcadeDrive(speed, rotation);
+    SmartDashboard.putNumber("Move Turn", rotation);
+    SmartDashboard.putNumber("Move Forward", -speed);
+    drive.arcadeDrive(speed * 0.5, rotation * 0.5);
     pos.updateMotors();
     SmartDashboard.putNumber("Angle", pos.getAngle());
     SmartDashboard.putNumber("Y Displacement", getYDisplacement());
     SmartDashboard.putNumber("X Displacement", getXDisplacement());
-  }
-
-  public void setMultiplier(double multiplier) {
-    this.multiplier = multiplier;
   }
 
   public double getIMURumble() {

@@ -218,7 +218,7 @@ public class SingleMotorBase extends SubsystemBase {
   }
 
   public void setVelocity(double target) {
-    closedLoop.setReference(target, ControlType.kVelocity, ClosedLoopSlot.kSlot1);
+    closedLoop.setReference(target * 0.5, ControlType.kVelocity, ClosedLoopSlot.kSlot1);
     onTick();
   }
 
